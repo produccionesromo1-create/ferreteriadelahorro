@@ -1,0 +1,272 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferreteria del ahorro catálogo mayoreo</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f3f3f3;
+    margin:0;
+}
+
+header{
+    background:#94E0B3;
+    text-align:center;
+    padding:20px;
+}
+
+header img{
+    width:280px;
+}
+
+h1{
+    text-align:center;
+}
+
+.filtros{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    padding:20px;
+}
+
+.filtros input,
+.filtros select{
+    padding:12px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+#buscador{
+    flex:1;
+    min-width:280px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:18px;
+    border-radius:12px;
+    box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+
+.card img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.price{
+    margin:10px 0;
+}
+
+.precio-mayoreo{
+    font-size:24px;
+    font-weight:bold;
+    color:#087636;
+    margin-bottom:5px;
+}
+
+.precio-menudeo{
+    font-size:20px;
+    font-weight:bold;
+    color:#333;
+}
+
+button{
+    background:#25D366;
+    color:white;
+    border:0;
+    padding:12px;
+    width:100%;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    opacity:.9;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+    <img src="logo-fergot.png" alt="FERGOT">
+</header>
+
+<h1>CATÁLOGO PRECIO MAYOREO</h1>
+
+<div class="filtros">
+
+    <input
+        id="buscador"
+        placeholder="Buscar producto">
+
+    <input
+        id="precioMin"
+        type="number"
+        placeholder="Precio mínimo">
+
+    <input
+        id="precioMax"
+        type="number"
+        placeholder="Precio máximo">
+
+    <select id="orden">
+        <option value="aleatorio">Orden aleatorio</option>
+        <option value="nombre">Nombre A-Z</option>
+        <option value="precioAsc">Precio menor a mayor</option>
+        <option value="precioDesc">Precio mayor a menor</option>
+    </select>
+
+</div>
+
+<div id="lista" class="grid"></div>
+
+<script>
+
+let productos=[];
+
+function mezclar(array){
+
+    let copia=[...array];
+
+    for(let i=copia.length-1;i>0;i--){
+
+        let j=Math.floor(Math.random()*(i+1));
+
+        [copia[i],copia[j]]=[copia[j],copia[i]];
+
+    }
+
+    return copia;
+
+}
+
+fetch("productos.json")
+.then(r=>r.json())
+.then(data=>{
+
+    productos=mezclar(data);
+
+    filtrar();
+
+});
+
+function render(lista){
+
+document.getElementById("lista").innerHTML=lista.map(p=>{
+
+let img=(p.imagen && p.imagen.trim()!="")
+? p.imagen
+: "default.png";
+
+return `
+<div class="card">
+
+<img src="${img}" onerror="this.src='default.png'">
+
+<h3>${p.producto}</h3>
+
+<div class="price">
+    <div class="precio-mayoreo">
+        Mayoreo: $${Number(p.Mayoreo).toFixed(2)}
+    </div>
+
+    <div class="precio-menudeo">
+        Menudeo: $${Number(p.Menudeo).toFixed(2)}
+    </div>
+</div>
+
+<button onclick="window.open('https://wa.me/523951347469?text=Hola, quiero cotizar ${encodeURIComponent(p.producto)}')">
+Cotizar por WhatsApp
+</button>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+function filtrar(){
+
+let texto=document.getElementById("buscador").value.toLowerCase();
+
+let min=parseFloat(document.getElementById("precioMin").value);
+
+let max=parseFloat(document.getElementById("precioMax").value);
+
+let orden=document.getElementById("orden").value;
+
+let lista=productos.filter(p=>{
+
+let coincideTexto=
+(p.producto)
+.toLowerCase()
+.includes(texto);
+
+let precio=Number(p.Mayoreo);
+
+let coincideMin=isNaN(min)||precio>=min;
+
+let coincideMax=isNaN(max)||precio<=max;
+
+return coincideTexto && coincideMin && coincideMax;
+
+});
+
+switch(orden){
+
+case "aleatorio":
+lista=mezclar(lista);
+break;
+
+case "nombre":
+lista.sort((a,b)=>
+a.producto.localeCompare(b.producto));
+break;
+
+case "precioAsc":
+lista.sort((a,b)=>
+Number(a.Mayoreo)-Number(b.Mayoreo));
+break;
+
+case "precioDesc":
+lista.sort((a,b)=>
+Number(b.Mayoreo)-Number(a.Mayoreo));
+break;
+
+}
+
+render(lista);
+
+}
+
+document.getElementById("buscador").addEventListener("input",filtrar);
+document.getElementById("precioMin").addEventListener("input",filtrar);
+document.getElementById("precioMax").addEventListener("input",filtrar);
+document.getElementById("orden").addEventListener("change",filtrar);
+
+</script>
+
+</body>
+</html>
+```
