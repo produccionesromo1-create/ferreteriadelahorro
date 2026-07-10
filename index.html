@@ -195,8 +195,12 @@ return `
     </div>
 </div>
 
-<button onclick="window.open('https://wa.me/523951201206?text=Hola, quiero cotizar ${encodeURIComponent(p.producto)}')">
-Cotizar por WhatsApp
+<button onclick="window.open(`https://wa.me/523951202000?text=${encodeURIComponent(`Hola, quiero cotizar el siguiente producto:
+
+Producto: ${p.producto}
+Precio Mayoreo: $${p.Mayoreo}
+Precio Menudeo: $${p.Menudeo}`)}`)">
+  Cotizar por WhatsApp
 </button>
 
 </div>
